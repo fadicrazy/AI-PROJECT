@@ -1,0 +1,8 @@
+{
+  "val_accuracy": 0.4298,
+  "val_auc": 0.8466,
+  "val_loss": 1.5754,
+  "train_accuracy": 0.8396,
+  "train_auc": 0.9063,
+  "train_loss": 0.3803
+}

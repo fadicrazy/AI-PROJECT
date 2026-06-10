@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Breast Cancer AI Prediction System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root { color-scheme: dark; font-family: 'Inter', sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #0a0e1a 0%, #16213e 100%); color: #e6edf8; }
+      .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+      .sidebar { background: linear-gradient(180deg, #0f1324 0%, #0a0e1a 100%); padding: 32px 24px; border-right: 1px solid rgba(99,102,241,.15); }
+      .brand { font-size: 1.45rem; font-weight: 900; margin-bottom: 24px; letter-spacing: -.03em; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+      .nav-link { display: block; color: #b9c2d9; padding: 14px 16px; border-radius: 16px; margin-bottom: 10px; text-decoration: none; transition: all .25s cubic-bezier(.4,.0,.2,1); cursor: pointer; }
+      .nav-link.active, .nav-link:hover { background: linear-gradient(135deg, rgba(99,102,241,.2), rgba(167,139,250,.1)); color: #fff; box-shadow: 0 8px 16px rgba(99,102,241,.12); }
+      .sidebar small { color: #6b7280; font-size: 0.8rem; }
+      .main { padding: 32px 40px; background: linear-gradient(135deg, #0a0e1a 0%, #16213e 100%); }
+      .section { display: none; animation: fadeIn .4s cubic-bezier(.4,.0,.2,1) both; }
+      .section.active { display: block; }
+      .hero { display: grid; gap: 20px; grid-template-columns: 1fr; margin-bottom: 32px; }
+      .panel { background: linear-gradient(135deg, #13182d 0%, #1a1f35 100%); border: 1px solid rgba(99,102,241,.15); border-radius: 28px; padding: 28px; box-shadow: 0 8px 32px rgba(99,102,241,.08); }
+      .panel h2 { margin: 0 0 14px; font-size: 1.15rem; color: #fff; font-weight: 700; }
+      .panel p { margin: 0; color: #9fb0d3; font-size: 0.95rem; }
+      .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
+      .stat-card { background: linear-gradient(135deg, rgba(99,102,241,.08), rgba(167,139,250,.04)); border: 1px solid rgba(99,102,241,.15); border-radius: 20px; padding: 22px; box-shadow: 0 4px 16px rgba(99,102,241,.06); transition: all .3s; }
+      .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(99,102,241,.12); }
+      .stat-card h3 { margin: 0; font-size: 1.45rem; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 800; }
+      .stat-card p { margin: 10px 0 0; color: #9fb0d3; font-size: 0.9rem; }
+      .form-grid { display: grid; gap: 20px; grid-template-columns: 1fr 1fr; }
+      .card { background: linear-gradient(135deg, #13182d 0%, #1a1f35 100%); border: 1px solid rgba(99,102,241,.15); border-radius: 24px; padding: 26px; box-shadow: 0 8px 32px rgba(99,102,241,.08); }
+      input, select, button, textarea { font: inherit; }
+      .field-group { margin-bottom: 18px; }
+      .field-group label { display: block; margin-bottom: 10px; font-size: .95rem; color: #d8dff0; font-weight: 600; }
+      .field-group input, .field-group select { width: 100%; border: 1px solid rgba(99,102,241,.2); background: rgba(13,24,45,.6); color: #eef2ff; padding: 13px 15px; border-radius: 14px; transition: all .2s; }
+      .field-group input:focus, .field-group select:focus { outline: none; border-color: rgba(99,102,241,.5); background: rgba(13,24,45,.8); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+      .field-group small { display: block; margin-top: 8px; color: #8b95b8; font-size: 0.85rem; }
+      .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      button { border: none; border-radius: 16px; cursor: pointer; padding: 14px 24px; font-weight: 700; transition: all .25s cubic-bezier(.4,.0,.2,1); }
+      button:hover { transform: translateY(-2px); }
+      button:active { transform: translateY(0); }
+      .btn-primary { background: linear-gradient(135deg, #6366f1, #a78bfa); color: #fff; box-shadow: 0 8px 24px rgba(99,102,241,.3); }
+      .btn-primary:hover { box-shadow: 0 12px 32px rgba(99,102,241,.4); }
+      .btn-secondary { background: rgba(99,102,241,.1); color: #dbeafe; border: 1px solid rgba(99,102,241,.2); }
+      .btn-secondary:hover { background: rgba(99,102,241,.15); }
+      .result-box { background: linear-gradient(135deg, #151c33 0%, #1a2244 100%); border: 1px solid rgba(99,102,241,.15); border-radius: 22px; padding: 24px; margin-top: 20px; box-shadow: 0 8px 32px rgba(99,102,241,.08); }
+      .result-row { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; margin-bottom: 14px; }
+      .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,102,241,.15); color: #c7d2ff; border-radius: 999px; padding: 10px 16px; font-size: .9rem; font-weight: 600; border: 1px solid rgba(99,102,241,.2); }
+      .danger { background: rgba(248,113,113,.18); color: #ffe4e4; border-color: rgba(248,113,113,.3); }
+      .success { background: rgba(52,211,153,.16); color: #dcfce7; border-color: rgba(52,211,153,.3); }
+      .warning { background: rgba(251,191,36,.16); color: #fef9c3; border-color: rgba(251,191,36,.3); }
+      .flag-list { list-style: none; padding: 0; margin: 0; }
+      .flag-list li { padding: 12px 14px; border-radius: 16px; margin-bottom: 12px; background: rgba(99,102,241,.08); border-left: 3px solid rgba(99,102,241,.3); }
+      canvas { max-width: 100%; height: auto !important; }
+      .alert { background: rgba(99,102,241,.1); border-left: 4px solid #6366f1; color: #c7d2ff; padding: 18px 20px; border-radius: 16px; border: 1px solid rgba(99,102,241,.2); }
+      .chat-window { max-height: 540px; overflow-y: auto; display: grid; gap: 14px; }
+      .bubble { border-radius: 20px; padding: 16px 18px; line-height: 1.6; }
+      .bubble.user { background: linear-gradient(135deg, rgba(99,102,241,.2), rgba(167,139,250,.1)); color: #eef2ff; justify-self: end; border: 1px solid rgba(99,102,241,.2); }
+      .bubble.bot { background: rgba(99,102,241,.08); color: #dbeafe; border: 1px solid rgba(99,102,241,.15); }
+      .quick-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+      .quick-button { background: rgba(99,102,241,.1); color: #eef2ff; padding: 12px 18px; border-radius: 16px; border: 1px solid rgba(99,102,241,.2); cursor: pointer; transition: all .2s; }
+      .quick-button:hover { background: rgba(99,102,241,.18); box-shadow: 0 4px 12px rgba(99,102,241,.15); }
+      .sample-list { display: grid; gap: 12px; max-height: 300px; overflow-y: auto; margin: 16px 0; }
+      .sample-item { background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.15); padding: 14px; border-radius: 14px; cursor: pointer; transition: all .2s; }
+      .sample-item:hover { background: rgba(99,102,241,.15); box-shadow: 0 4px 12px rgba(99,102,241,.12); }
+      hr { border: none; border-top: 1px solid rgba(99,102,241,.15); margin: 16px 0; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+      @media (max-width: 1120px) { .layout { grid-template-columns: 1fr; } .sidebar { position: sticky; top: 0; z-index: 20; } }
+      @media (max-width: 860px) { .stats-grid, .form-grid { grid-template-columns: 1fr; } .field-row { grid-template-columns: 1fr; } .main { padding: 20px 24px; } }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">🧬 Breast Cancer AI</div>
+        <div class="nav-link active" data-panel="overview">📊 Overview</div>
+        <div class="nav-link" data-panel="predict">🔮 Predict</div>
+        <div class="nav-link" data-panel="demo">📈 Demo</div>
+        <div class="nav-link" data-panel="image">🖼️ Image</div>
+        <div class="nav-link" data-panel="models">⚡ Models</div>
+        <div class="nav-link" data-panel="chat">💬 Chat</div>
+        <div style="margin-top: 24px; font-size: 0.8rem; color: #8b95b8;">For research & education only. Not medical advice.</div>
+      </aside>
+      <main class="main">
+        <section id="overview" class="section active">
+          <div class="hero">
+            <div class="panel">
+              <h2>🚀 Multimodal Breast Cancer Prediction System</h2>
+              <p>Wisconsin dataset (569 samples) · 5 ML models · CNN image analysis · AI-powered clinical insights.</p>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card"><h3 id="stat-samples">0</h3><p>Dataset samples</p></div>
+              <div class="stat-card"><h3 id="stat-features">0</h3><p>Clinical features</p></div>
+              <div class="stat-card"><h3 id="stat-classes">2</h3><p>Classification labels</p></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>📈 Model Performance Dashboard</h2>
+            <canvas id="overviewChart"></canvas>
+          </div>
+        </section>
+
+        <section id="predict" class="section">
+          <div class="panel">
+            <h2>🔮 Tabular Prediction Engine</h2>
+            <p>Enter 30 clinical features or load real dataset samples. Get probability breakdown and clinical recommendations.</p>
+          </div>
+          <div class="form-grid">
+            <div class="card">
+              <div class="field-group">
+                <label for="model-select">🤖 Select Model</label>
+                <select id="model-select" style="width:100%;"><option>Random Forest</option><option>Gradient Boosting</option><option>SVM</option><option>Logistic Regression</option><option>KNN</option></select>
+              </div>
+              <button class="btn-secondary" id="loadSamplesButton" style="margin-bottom: 16px; width: 100%;">📊 Load Dataset Samples</button>
+              <div id="samplesContainer" style="display: none;">
+                <label style="display: block; margin-bottom: 12px; color: #d8dff0; font-weight: 600;">Quick Load from Wisconsin Dataset</label>
+                <div class="sample-list" id="sampleList"></div>
+              </div>
+              <hr>
+              <div id="feature-inputs"></div>
+              <button class="btn-primary" id="predictButton" style="width: 100%; margin-top: 12px;">🔮 Predict Now</button>
+            </div>
+            <div class="card result-box" id="predictionResult">
+              <h2>Prediction Result</h2>
+              <div id="predictionSummary" style="color: #9fb0d3;">Use the form to generate predictions.</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="demo" class="section">
+          <div class="panel">
+            <h2>📈 Random Demo Sample</h2>
+            <p>Load a random sample and get predictions from all 5 models simultaneously with comprehensive clinical report.</p>
+            <button class="btn-primary" id="sampleButton" style="margin-top: 12px;">🎲 Load Random Sample</button>
+          </div>
+          <div class="card result-box" id="sampleResult"></div>
+        </section>
+
+        <section id="image" class="section">
+          <div class="panel">
+            <h2>🖼️ Image Prediction</h2>
+            <p>Upload medical imaging (JPG/PNG/WEBP/BMP) for CNN-based analysis. Synthetic-pattern trained model.</p>
+            <div class="alert">⚠️ Image predictions use trained CNN. Not a replacement for clinical diagnosis.</div>
+          </div>
+          <div class="form-grid">
+            <div class="card">
+              <div class="field-group">
+                <label for="imageInput">📤 Upload Image</label>
+                <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp,image/bmp" />
+              </div>
+              <button class="btn-primary" id="imagePredictButton" style="width: 100%;">🔮 Predict Image</button>
+            </div>
+            <div class="card result-box" id="imageResult"></div>
+          </div>
+        </section>
+
+        <section id="models" class="section">
+          <div class="panel">
+            <h2>⚡ Model Comparison</h2>
+            <canvas id="modelsChart"></canvas>
+          </div>
+          <div class="card result-box" id="modelsTableContainer"></div>
+        </section>
+
+        <section id="chat" class="section">
+          <div class="panel">
+            <h2>💬 AI Assistant</h2>
+            <p>Ask questions about dataset, models, predictions, and clinical recommendations.</p>
+          </div>
+          <div class="card result-box">
+            <div class="chat-window" id="chatWindow"></div>
+            <div class="field-group">
+              <textarea id="chatInput" rows="3" placeholder="Ask a question..." style="width:100%; background:rgba(13,24,45,.6); border:1px solid rgba(99,102,241,.2); color:#eef2ff; padding:14px; border-radius:16px;"></textarea>
+            </div>
+            <button class="btn-primary" id="chatSendButton" style="width: 100%;">Send</button>
+            <div class="quick-buttons" id="quickButtons"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const panels = document.querySelectorAll('.section');
+      const navLinks = document.querySelectorAll('.nav-link');
+      const featureInputs = document.getElementById('feature-inputs');
+      const predictionResult = document.getElementById('predictionResult');
+      const sampleResult = document.getElementById('sampleResult');
+      const imageResult = document.getElementById('imageResult');
+      const modelsTableContainer = document.getElementById('modelsTableContainer');
+      const chatWindow = document.getElementById('chatWindow');
+      const quickButtons = document.getElementById('quickButtons');
+      const overviewChartCtx = document.getElementById('overviewChart');
+      const modelsChartCtx = document.getElementById('modelsChart');
+      const statSamples = document.getElementById('stat-samples');
+      const statFeatures = document.getElementById('stat-features');
+      const statClasses = document.getElementById('stat-classes');
+      let overviewChart, modelsChart;
+
+      navLinks.forEach(link => link.addEventListener('click', () => {
+        navLinks.forEach(item => item.classList.remove('active'));
+        link.classList.add('active');
+        const panelId = link.dataset.panel;
+        panels.forEach(panel => panel.id === panelId ? panel.classList.add('active') : panel.classList.remove('active'));
+      }));
+
+      async function fetchJson(path) {
+        const response = await fetch(path);
+        return response.json();
+      }
+
+      async function renderFeatureInputs() {
+        const data = await fetchJson('/api/feature_names');
+        const names = data.feature_names;
+        const examples = data.feature_examples || {};
+        featureInputs.innerHTML = '';
+        names.forEach((name) => {
+          const sampleValue = examples[name] !== undefined ? examples[name] : '';
+          const wrapper = document.createElement('div');
+          wrapper.className = 'field-group';
+          wrapper.innerHTML = `<label>${name}</label><input type='number' step='any' data-name='${name}' placeholder='Sample: ${sampleValue}' /><small style='display:block; margin-top:6px; color:#8b95b8; font-size:0.85rem;'>Sample value: ${sampleValue}</small>`;
+          featureInputs.appendChild(wrapper);
+        });
+      }
+
+      function renderModelsTable(models) {
+        let html = '<table style="width:100%; border-collapse: collapse; font-size:0.95rem;">';
+        html += '<thead><tr style="color:#9fb0d3;"><th style="text-align:left; padding:12px 8px;">Model</th><th style="padding:12px 8px;">Accuracy</th><th style="padding:12px 8px;">AUC</th><th style="padding:12px 8px;">F1</th></tr></thead><tbody>';
+        models.forEach(item => {
+          html += `<tr><td style="padding:12px 8px; border-top:1px solid rgba(255,255,255,.06);">${item.name}</td><td style="padding:12px 8px;">${item.accuracy}</td><td style="padding:12px 8px;">${item.roc_auc}</td><td style="padding:12px 8px;">${item.f1}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        modelsTableContainer.innerHTML = html;
+      }
+
+      function summaryCard(title, value) {
+        return `<div class='stat-card'><h3>${value}</h3><p>${title}</p></div>`;
+      }
+
+      async function loadOverview() {
+        const stats = await fetchJson('/api/dataset_stats');
+        statSamples.textContent = stats.samples;
+        statFeatures.textContent = stats.features;
+        statClasses.textContent = stats.classes.length;
+        const results = await fetchJson('/api/model_results');
+        const labels = results.models.map(item => item.name);
+        const accuracies = results.models.map(item => item.accuracy);
+        const aucs = results.models.map(item => item.roc_auc);
+        const f1 = results.models.map(item => item.f1);
+        if (overviewChart) overviewChart.destroy();
+        overviewChart = new Chart(overviewChartCtx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: 'Accuracy', data: accuracies, backgroundColor: 'rgba(99,102,241,0.8)' },
+              { label: 'AUC-ROC', data: aucs, backgroundColor: 'rgba(16,185,129,0.8)' },
+              { label: 'F1 Score', data: f1, backgroundColor: 'rgba(59,130,246,0.8)' },
+            ],
+          },
+          options: { responsive: true, plugins: { legend: { labels: { color: '#cbd5e1' } } }, scales: { x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,.08)' } }, y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,.08)' } } } }
+        });
+      }
+
+      async function loadModelsComparison() {
+        const results = await fetchJson('/api/compare_models');
+        renderModelsTable(results.models);
+        const labels = results.models.map(item => item.name);
+        const accuracies = results.models.map(item => item.accuracy);
+        if (modelsChart) modelsChart.destroy();
+        modelsChart = new Chart(modelsChartCtx, {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'Accuracy', borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.25)', data: accuracies, fill: true, tension: 0.35 }] },
+          options: { responsive: true, plugins: { legend: { labels: { color: '#cbd5e1' } } }, scales: { x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,.08)' } }, y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,.08)' } } } }
+        });
+      }
+
+      function showPrediction(result) {
+        const badge = result.risk_level === 'High' ? 'danger' : result.risk_level === 'Moderate' ? 'warning' : 'success';
+        const icon = result.label === 'Benign' ? '✅' : '⚠️';
+        let html = `<div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;'><div><h3 style='margin:0; font-size:1.3rem;'>${icon} ${result.label}</h3><p style='margin:6px 0 0; color:#9fb0d3;'>${result.analysis.summary}</p></div><div class='badge ${badge}'>Risk: ${result.risk_level}</div></div>`;
+        html += `<div style='background:rgba(99,102,241,.08); padding:16px; border-radius:16px; border:1px solid rgba(99,102,241,.15); margin:14px 0;'><strong>Confidence Score</strong><div style='font-size:1.8rem; margin-top:8px; background:linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-weight:800;'>${result.confidence}%</div></div>`;
+        html += `<div style='display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0;'><div style='background:rgba(52,211,153,.1); padding:14px; border-radius:14px; border:1px solid rgba(52,211,153,.2);'><strong style='color:#86efac;'>Benign</strong><div style='font-size:1.3rem; margin-top:6px; color:#dcfce7;'>${(result.probabilities.Benign*100).toFixed(1)}%</div></div><div style='background:rgba(248,113,113,.1); padding:14px; border-radius:14px; border:1px solid rgba(248,113,113,.2);'><strong style='color:#fca5a5;'>Malignant</strong><div style='font-size:1.3rem; margin-top:6px; color:#ffe4e4;'>${(result.probabilities.Malignant*100).toFixed(1)}%</div></div></div>`;
+        if (result.flagged_features.length) {
+          html += '<div style="margin-top:18px;"><strong style="color:#d8dff0; display:block; margin-bottom:12px;">🚩 Flagged Features (Clinical Anomalies)</strong><ul class="flag-list">';
+          result.flagged_features.forEach(flag => {
+            html += `<li><strong style='color:#c7d2ff;'>${flag.feature}</strong><br><span style='color:#9fb0d3;'>Value: ${flag.value.toFixed(2)} · ${flag.comparison} · Deviation: ${flag.deviation}σ</span></li>`;
+          });
+          html += '</ul></div>';
+        }
+        if (result.analysis.recommendations.length) {
+          html += '<div style="margin-top:18px; background:rgba(251,191,36,.08); padding:16px; border-radius:16px; border:1px solid rgba(251,191,36,.2);"><strong style="color:#fcd34d; display:block; margin-bottom:10px;">💡 Clinical Recommendations</strong><ul style="margin:0; padding-left:20px; color:#fef9c3;">';
+          result.analysis.recommendations.forEach(item => html += `<li style='margin-bottom:6px;'>${item}</li>`);
+          html += '</ul></div>';
+        }
+        predictionResult.innerHTML = html;
+      }
+
+      document.getElementById('predictButton').addEventListener('click', async () => {
+        const inputs = Array.from(featureInputs.querySelectorAll('input'));
+        const features = inputs.map(input => parseFloat(input.value || 0));
+        const valid = features.every(value => !Number.isNaN(value));
+        if (!valid || features.length !== inputs.length) {
+          predictionResult.innerHTML = '<div class="alert">⚠️ Please enter all 30 numeric feature values.</div>';
+          return;
+        }
+        const model = document.getElementById('model-select').value;
+        predictionResult.innerHTML = '<div class="alert">🔄 Analyzing features...</div>';
+        const response = await fetch('/api/predict', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, features })
+        });
+        const data = await response.json();
+        if (data.error) {
+          predictionResult.innerHTML = `<div class="alert">❌ ${data.error}</div>`;
+          return;
+        }
+        showPrediction(data);
+      });
+
+      document.getElementById('loadSamplesButton').addEventListener('click', async () => {
+        const container = document.getElementById('samplesContainer');
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        if (container.style.display === 'block') {
+          const response = await fetch('/api/dataset_samples?count=8');
+          const data = await response.json();
+          const list = document.getElementById('sampleList');
+          list.innerHTML = '';
+          data.samples.forEach((sample, i) => {
+            const item = document.createElement('div');
+            item.className = 'sample-item';
+            item.innerHTML = `<strong>Sample #${sample.index}</strong> — ${sample.target}`;
+            item.addEventListener('click', () => {
+              const inputs = Array.from(featureInputs.querySelectorAll('input'));
+              inputs.forEach((input, idx) => { input.value = sample.features[idx]; });
+              container.style.display = 'none';
+            });
+            list.appendChild(item);
+          });
+        }
+      });
+
+      document.getElementById('sampleButton').addEventListener('click', async () => {
+        sampleResult.innerHTML = '<div class="alert">🔄 Loading sample...</div>';
+        const data = await fetchJson('/api/predict_sample');
+        let html = `<h3>📊 Sample #${data.sample_index}</h3><p><strong>Actual:</strong> ${data.target}</p>`;
+        html += '<div style="margin-top:14px;"><strong>Predictions</strong><ul style="margin:12px 0 0 16px; color:#cbd5e1;">';
+        data.predictions.forEach(pred => html += `<li>${pred.model}: <strong>${pred.label}</strong> (${pred.confidence}%)</li>`);
+        html += '</ul></div>';
+        if (data.agent_report) {
+          html += '<div style="margin-top:18px; background:rgba(99,102,241,.08); padding:14px; border-radius:14px;"><strong>📋 Summary</strong><p style="margin:8px 0 0; color:#dbeafe;">' + data.agent_report.summary + '</p></div>';
+        }
+        sampleResult.innerHTML = html;
+      });
+
+      document.getElementById('imagePredictButton').addEventListener('click', async () => {
+        const fileInput = document.getElementById('imageInput');
+        if (!fileInput.files.length) {
+          imageResult.innerHTML = '<div class="alert">❌ Please select an image.</div>';
+          return;
+        }
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+        imageResult.innerHTML = '<div class="alert">🔄 Processing image...</div>';
+        const response = await fetch('/api/predict_image', { method: 'POST', body: formData });
+        const data = await response.json();
+        if (data.error) {
+          imageResult.innerHTML = `<div class="alert">❌ ${data.error}</div>`;
+          return;
+        }
+        imageResult.innerHTML = `<div style='display:flex; gap:20px; align-items:center;'><img src='${data.thumbnail}' alt='Preview' style='width:140px; border-radius:18px; border:1px solid rgba(99,102,241,.2);'><div><h3>${data.label}</h3><div class='badge ${data.risk_level === 'High' ? 'danger' : data.risk_level === 'Moderate' ? 'warning' : 'success'}'>Risk: ${data.risk_level}</div><p style='margin:12px 0 0;'>Confidence: ${data.confidence}%</p></div></div>`;
+        imageResult.innerHTML += '<div style="margin-top:18px;"><strong>Probabilities</strong><ul style="margin:12px 0 0 16px; color:#cbd5e1;"><li>Benign: ' + (data.probabilities.Benign*100).toFixed(1) + '%</li><li>Malignant: ' + (data.probabilities.Malignant*100).toFixed(1) + '%</li></ul></div>';
+      });
+
+      document.getElementById('chatSendButton').addEventListener('click', async () => {
+        const question = document.getElementById('chatInput').value.trim();
+        if (!question) return;
+        appendChat('user', question);
+        document.getElementById('chatInput').value = '';
+        const response = await fetch('/api/agent/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question })
+        });
+        const data = await response.json();
+        appendChat('bot', data.answer || 'I could not process that question.');
+      });
+
+      function appendChat(role, text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble ' + (role === 'user' ? 'user' : 'bot');
+        bubble.textContent = text;
+        chatWindow.appendChild(bubble);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+
+      const suggestions = [
+        'What is in the Wisconsin dataset?',
+        'How accurate is Random Forest?',
+        'What do risk levels mean?',
+        'Which features matter most?',
+      ];
+      suggestions.forEach(text => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'quick-button';
+        button.textContent = text;
+        button.addEventListener('click', () => {
+          document.getElementById('chatInput').value = text;
+          document.getElementById('chatSendButton').click();
+        });
+        quickButtons.appendChild(button);
+      });
+
+      window.addEventListener('load', async () => {
+        await renderFeatureInputs();
+        await loadOverview();
+        await loadModelsComparison();
+      });
+    </script>
+  </body>
+</html>
